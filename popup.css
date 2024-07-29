@@ -1,0 +1,19 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 300px;
+}
+
+.music-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
