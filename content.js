@@ -10,5 +10,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     audio.play();
   } else if (message.action === "pause") {
     console.log("pause was pressed");
+    audio.pause();
   }
 });
