@@ -16,3 +16,11 @@ pauseButton.addEventListener("click", () => {
   console.log("Sending pause command");
   chrome.runtime.sendMessage({ action: "pause" });
 });
+
+//CHATGPT API
+API_URL = "https://api.openai.com/v1/chat/completions";
+API_KEY = process.env
+
+async function sendMessage(message) {
+  const respone = await fetch(API_URL);
+}
