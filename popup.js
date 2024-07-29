@@ -1,6 +1,7 @@
 const tabTitle = document.querySelector("#title");
 const playButton = document.querySelector("#play-button");
 const pauseButton = document.querySelector("#pause-button");
+const songRec = document.querySelector("#song");
 
 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
   const activeTab = tabs[0];
@@ -67,6 +68,7 @@ async function main() {
   );
 
   console.log(chatGPTResponse);
+  songRec.textContent = `${chatGPTResponse}`;
 }
 
 main();
