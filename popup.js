@@ -18,7 +18,7 @@ pauseButton.addEventListener("click", () => {
   chrome.runtime.sendMessage({ action: "pause" });
 });
 
-//CHATGPT API
+//ChatGPT API
 
 async function loadConfig() {
   try {

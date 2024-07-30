@@ -1,3 +1,13 @@
+chrome.action.enable();
+
+chrome.runtime.onInstalled.addListener(() => {
+  console.log("Extension Installed...");
+});
+
+chrome.runtime.onStartup.addListener(() => {
+  console.log("Extension reloaded...");
+});
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log("Background script received message:", message);
   // Ensure that message is related to audio control
