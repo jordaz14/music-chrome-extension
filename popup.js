@@ -39,6 +39,28 @@ async function loadConfig() {
   }
 }
 
+const schemaJSON = {
+  type: "object",
+  properties: {
+    track: { type: "string", description: "Name of the song" },
+    artist: {
+      type: "string",
+      description: "Name of the artist associated with the track",
+    },
+    album: {
+      type: "string",
+      description: "Name of the album associated with the track",
+    },
+    mood: { type: "string", description: "Mood of the tab title in one word" },
+    rationale: {
+      type: "string",
+      description:
+        "Justification for why ChatGPT recommended this song in one sentence",
+    },
+    spotifyURI: { type: "string", description: "Spotify URI for the track" },
+  },
+};
+
 async function main() {
   const API_URL = "https://api.openai.com/v1/chat/completions";
   const API_KEY = await loadConfig();
@@ -53,8 +75,30 @@ async function main() {
           Authorization: `Bearer ${API_KEY}`,
         },
         body: JSON.stringify({
-          model: "gpt-3.5-turbo", // Use the desired model
-          messages: [{ role: "user", content: message }],
+          model: "gpt-3.5-turbo",
+          response_format: { type: "json_object" },
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a helpful assistant designed to output music recommendations in JSON format",
+            },
+            { role: "user", content: message },
+          ],
+          tools: [
+            {
+              type: "function",
+              function: {
+                name: "musicRecsToJSON",
+                description: "Music Recommendations in JSON Format",
+                parameters: schemaJSON,
+              },
+            },
+          ],
+          tool_choice: {
+            type: "function",
+            function: { name: "musicRecsToJSON" },
+          },
         }),
       });
 
@@ -63,14 +107,14 @@ async function main() {
       }
 
       const data = await response.json();
-      const reply = data.choices[0].message.content;
+      const reply = data.choices[0].message.tool_calls[0].function.arguments;
+      console.log(reply);
       return reply;
     } catch (error) {}
   }
 
   const chatGPTResponse = await promptChatGPT(
-    `Provide a song recommendation which encapsulates the mood of ${tabTitle.textContent}. Strictly follow the response format of: 
-    song name, artist.`
+    `Provide a real song recommendation which encapsulates the mood of ${tabTitle.textContent}.`
   );
 
   console.log(chatGPTResponse);
