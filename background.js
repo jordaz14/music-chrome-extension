@@ -30,7 +30,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 function authenticateSpotify() {
   const clientID = "d3cfbf644eb24125af43c2032ac41d10";
   const redirectURI = `https://${chrome.runtime.id}.chromiumapp.org/`;
-  const scopes = "user-read-private user-read-email";
+  const scopes =
+    "user-read-private user-read-email user-read-playback-state user-modify-playback-state streaming";
   const authURL = `https://accounts.spotify.com/authorize?client_id=${clientID}&response_type=token&redirect_uri=${encodeURIComponent(
     redirectURI
   )}&scope=${encodeURIComponent(scopes)}`;
@@ -53,6 +54,7 @@ function authenticateSpotify() {
       )[1];
       console.log("Access Token:", accessToken);
       fetchUserProfile(accessToken);
+      playSong(accessToken);
 
       //      chrome.storage.local.set({ spotifyAccessToken: accessToken });
     }
@@ -73,6 +75,55 @@ async function fetchUserProfile(accessToken) {
 
     const data = await response.json();
     console.log("User Profile:", data);
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+async function playSong(accessToken) {
+  try {
+    // Get available devices
+    const devicesResponse = await fetch(
+      "https://api.spotify.com/v1/me/player/devices",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (!devicesResponse.ok) {
+      throw new Error("Failed to fetch devices");
+    }
+
+    const devicesData = await devicesResponse.json();
+    const device =
+      devicesData.devices.find((d) => d.is_active) || devicesData.devices[0];
+
+    if (!device) {
+      throw new Error("No active device found");
+    }
+
+    // Start playback on the selected device
+    const playResponse = await fetch(
+      `https://api.spotify.com/v1/me/player/play?device_id=${device.id}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uris: ["spotify:track:6cqcmtaxNL7YCKKsuYAPJo"],
+        }),
+      }
+    );
+
+    if (!playResponse.ok) {
+      throw new Error("Failed to start playback");
+    }
+
+    console.log("Playback started");
   } catch (error) {
     console.error("Error:", error);
   }

@@ -16,7 +16,13 @@
   },
   "oauth2": {
     "client_id": "d3cfbf644eb24125af43c2032ac41d10",
-    "scopes": ["user-read-private", "user-read-email"]
+    "scopes": [
+      "user-read-private",
+      "user-read-email",
+      "user-read-playback-state",
+      "user-modify-playback-state",
+      "streaming"
+    ]
   },
   "web_accessible_resources": [
     {
