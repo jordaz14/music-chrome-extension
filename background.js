@@ -21,13 +21,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.action === "authenticateSpotify") {
-    authenticateSpotify();
+    authenticateSpotify(message.payload);
   }
 });
 
 // Spotify API
 
-function authenticateSpotify() {
+function authenticateSpotify(GPTPayload) {
   const clientID = "d3cfbf644eb24125af43c2032ac41d10";
   const redirectURI = `https://${chrome.runtime.id}.chromiumapp.org/`;
   const scopes =
@@ -53,34 +53,15 @@ function authenticateSpotify() {
         /access_token=([^&]*)/
       )[1];
       console.log("Access Token:", accessToken);
-      fetchUserProfile(accessToken);
-      playSong(accessToken);
+
+      playSong(accessToken, GPTPayload);
 
       //      chrome.storage.local.set({ spotifyAccessToken: accessToken });
     }
   );
 }
 
-async function fetchUserProfile(accessToken) {
-  try {
-    const response = await fetch("https://api.spotify.com/v1/me", {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch user profile");
-    }
-
-    const data = await response.json();
-    console.log("User Profile:", data);
-  } catch (error) {
-    console.error("Error:", error);
-  }
-}
-
-async function playSong(accessToken) {
+async function playSong(accessToken, GPTPayload) {
   try {
     // Get available devices
     const devicesResponse = await fetch(
@@ -104,6 +85,12 @@ async function playSong(accessToken) {
       throw new Error("No active device found");
     }
 
+    const spotifyURI = await getSpotifyURI(
+      GPTPayload.track,
+      GPTPayload.artist,
+      accessToken
+    );
+
     // Start playback on the selected device
     const playResponse = await fetch(
       `https://api.spotify.com/v1/me/player/play?device_id=${device.id}`,
@@ -114,7 +101,7 @@ async function playSong(accessToken) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          uris: ["spotify:track:6cqcmtaxNL7YCKKsuYAPJo"],
+          uris: [spotifyURI],
         }),
       }
     );
@@ -126,5 +113,32 @@ async function playSong(accessToken) {
     console.log("Playback started");
   } catch (error) {
     console.error("Error:", error);
+  }
+}
+
+async function getSpotifyURI(trackName, artistName, accessToken) {
+  const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(
+    trackName
+  )}%20${encodeURIComponent(artistName)}&type=track`;
+
+  try {
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!response.ok) {
+      throw new Error("HTTP error! status: ${response.status}");
+    }
+
+    const data = await response.json();
+    const track = data.tracks.items[0];
+
+    if (track) {
+      return track.uri;
+    } else {
+      throw new Error("Track not found");
+    }
+  } catch (error) {
+    console.error("Error fetching track:", error);
   }
 }

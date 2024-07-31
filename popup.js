@@ -2,6 +2,7 @@ const tabTitle = document.querySelector("#title");
 const moodDesc = document.querySelector("#mood");
 const songRec = document.querySelector("#song");
 const spotifyButton = document.querySelector("#spotify-button");
+const openaiButton = document.querySelector("#openai-button");
 
 /*
 const playButton = document.querySelector("#play-button");
@@ -24,6 +25,8 @@ pauseButton.addEventListener("click", () => {
   chrome.runtime.sendMessage({ action: "pause" });
 });
 */
+
+openaiButton.addEventListener("click", () => main());
 
 //ChatGPT API
 
@@ -58,14 +61,13 @@ const schemaJSON = {
       description:
         "Justification for why ChatGPT recommended this song in one sentence",
     },
-    spotifyURI: { type: "string", description: "Spotify URI for the track" },
   },
+  required: ["track", "artist"],
 };
 
 async function main() {
   const API_URL = "https://api.openai.com/v1/chat/completions";
   const API_KEY = await loadConfig();
-  console.log(API_URL, API_KEY);
 
   async function promptChatGPT(message) {
     try {
@@ -110,19 +112,19 @@ async function main() {
       const data = await response.json();
       const reply = data.choices[0].message.tool_calls[0].function.arguments;
       const jsonReply = JSON.parse(reply);
+      console.log(jsonReply);
       return jsonReply;
     } catch (error) {}
   }
 
   const chatGPTResponse = await promptChatGPT(
-    `Provide a real song recommendation which encapsulates the mood of ${tabTitle.textContent}.`
+    `Provide a song recommendation which encapsulates the mood of ${tabTitle.textContent}.`
   );
 
   moodDesc.textContent = `Mood: ${chatGPTResponse.mood}`;
   songRec.textContent = `Recommendation: ${chatGPTResponse.track} by ${chatGPTResponse.artist}`;
 
   spotifyButton.addEventListener("click", () => {
-    console.log("Sending Spotify Auth command");
     chrome.runtime.sendMessage({
       action: "authenticateSpotify",
       payload: chatGPTResponse,

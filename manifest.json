@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Tune Tab",
+  "name": "Tab Tunes",
   "version": "1.0",
   "description": "Listen to music tailored to your browser experience.",
   "action": {
