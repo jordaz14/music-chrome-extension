@@ -19,4 +19,41 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       chrome.tabs.sendMessage(tabs[0].id, message);
     });
   }
+
+  if (message.action === "authenticateSpotify") {
+    authenticateSpotify();
+  }
 });
+
+// Spotify API
+
+function authenticateSpotify() {
+  const clientID = "";
+  const redirectURI = `https://${chrome.runtime.id}.chromiumapp.org/`;
+  const scopes = "user-read-private user-read-email";
+  const authURL = `https://accounts.spotify.com/authorize?client_id=${clientID}&response_type=token&redirect_uri=${encodeURIComponent(
+    redirectURI
+  )}&scope=${encodeURIComponent(scopes)}`;
+
+  chrome.identity.launchWebAuthFlow(
+    {
+      url: authURL,
+      interactive: true,
+    },
+    (redirectUrl) => {
+      if (chrome.runtime.lastError || !redirectUrl) {
+        console.error(
+          chrome.runtime.lastError || "Error during authentication"
+        );
+        return;
+      }
+
+      const accessToken = new URL(redirectUrl).hash.match(
+        /access_token=([^&]*)/
+      )[1];
+      console.log("Access Token:", accessToken);
+
+      chrome.storage.local.set({ spotifyAccessToken: accessToken });
+    }
+  );
+}

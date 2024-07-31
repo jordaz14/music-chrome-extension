@@ -1,6 +1,7 @@
 const tabTitle = document.querySelector("#title");
 const playButton = document.querySelector("#play-button");
 const pauseButton = document.querySelector("#pause-button");
+const spotifyButton = document.querySelector("#spotify-button");
 const songRec = document.querySelector("#song");
 
 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -16,6 +17,11 @@ playButton.addEventListener("click", () => {
 pauseButton.addEventListener("click", () => {
   console.log("Sending pause command");
   chrome.runtime.sendMessage({ action: "pause" });
+});
+
+spotifyButton.addEventListener("click", () => {
+  console.log("Sending Spotify Auth command");
+  chrome.runtime.sendMessage({ action: "authenticateSpotify" });
 });
 
 //ChatGPT API
