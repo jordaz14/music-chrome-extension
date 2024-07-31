@@ -9,12 +9,18 @@
   </head>
   <body>
     <div class="description">
-      <p id="title">Title:</p>
+      <p id="title"></p>
       <p id="mood">Mood:</p>
-      <p id="song">Recommendation:</p>
     </div>
-    <div class="button-container">
+    <form id="filter-form">
+      <label for="genre-input">Genre (optional):</label>
+      <input type="text" name="genre-input" placeholder="Filter by Genre" />
+      <label for="artist-input">Artist (optional):</label>
+      <input type="text" name="artist-input" placeholder="Filter by Artists" />
       <button id="openai-button">Refresh</button>
+    </form>
+    <div class="recommendation-container">
+      <p id="song">Recommendation:</p>
       <button id="spotify-button">Play</button>
     </div>
   </body>

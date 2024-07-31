@@ -12,10 +12,36 @@ body {
   background-color: #353535;
   color: white;
   border-radius: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.description {
-  margin-bottom: 10px;
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+input {
+  color: white;
+  background-color: #646464;
+  border: none;
+  height: 25px;
+  padding: 5px;
+}
+
+input:focus {
+  outline: none;
+  border: none;
+}
+
+form button {
+  margin-top: 10px;
+}
+
+#title {
+  font-weight: bold;
 }
 
 #spotify-button {
@@ -25,6 +51,8 @@ body {
   border: none;
   border-radius: 10px;
   padding: 10px;
+  width: 100%;
+  margin-top: 10px;
 }
 
 #spotify-button:active {
@@ -38,15 +66,16 @@ body {
   border: none;
   border-radius: 10px;
   padding: 10px;
+  flex: 1;
 }
 
 #openai-button:active {
   background-color: #4f5051;
 }
 
-
 .button-container {
   display: flex;
-  flex-direction: column;
   gap: 5px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
