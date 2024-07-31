@@ -14,6 +14,10 @@
   "background": {
     "service_worker": "background.js"
   },
+  "oauth2": {
+    "client_id": "d3cfbf644eb24125af43c2032ac41d10",
+    "scopes": ["user-read-private", "user-read-email"]
+  },
   "web_accessible_resources": [
     {
       "resources": ["free-song.mp3"],
@@ -21,5 +25,6 @@
     }
   ],
   "content_scripts": [{ "matches": ["<all_urls>"], "js": ["content.js"] }],
-  "permissions": ["activeTab"]
+  "permissions": ["activeTab", "identity"],
+  "host_permissions": ["https://accounts.spotify.com/"]
 }
