@@ -1,14 +1,19 @@
 const tabTitle = document.querySelector("#title");
+const moodDesc = document.querySelector("#mood");
+const songRec = document.querySelector("#song");
+const spotifyButton = document.querySelector("#spotify-button");
+
+/*
 const playButton = document.querySelector("#play-button");
 const pauseButton = document.querySelector("#pause-button");
-const spotifyButton = document.querySelector("#spotify-button");
-const songRec = document.querySelector("#song");
+*/
 
 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
   const activeTab = tabs[0];
-  tabTitle.textContent = `${activeTab.title}`;
+  tabTitle.textContent = `Tab: ${activeTab.title}`;
 });
 
+/*
 playButton.addEventListener("click", () => {
   console.log("Sending play command");
   chrome.runtime.sendMessage({ action: "play" });
@@ -18,11 +23,7 @@ pauseButton.addEventListener("click", () => {
   console.log("Sending pause command");
   chrome.runtime.sendMessage({ action: "pause" });
 });
-
-spotifyButton.addEventListener("click", () => {
-  console.log("Sending Spotify Auth command");
-  chrome.runtime.sendMessage({ action: "authenticateSpotify" });
-});
+*/
 
 //ChatGPT API
 
@@ -108,8 +109,8 @@ async function main() {
 
       const data = await response.json();
       const reply = data.choices[0].message.tool_calls[0].function.arguments;
-      console.log(reply);
-      return reply;
+      const jsonReply = JSON.parse(reply);
+      return jsonReply;
     } catch (error) {}
   }
 
@@ -117,8 +118,16 @@ async function main() {
     `Provide a real song recommendation which encapsulates the mood of ${tabTitle.textContent}.`
   );
 
-  console.log(chatGPTResponse);
-  songRec.textContent = `${chatGPTResponse}`;
+  moodDesc.textContent = `Mood: ${chatGPTResponse.mood}`;
+  songRec.textContent = `Recommendation: ${chatGPTResponse.track} by ${chatGPTResponse.artist}`;
+
+  spotifyButton.addEventListener("click", () => {
+    console.log("Sending Spotify Auth command");
+    chrome.runtime.sendMessage({
+      action: "authenticateSpotify",
+      payload: chatGPTResponse,
+    });
+  });
 }
 
 main();

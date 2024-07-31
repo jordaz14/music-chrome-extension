@@ -114,7 +114,7 @@ async function playSong(accessToken) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          uris: ["spotify:track:0hFr6D7CnMR0obgvwb9jTV"],
+          uris: ["spotify:track:6cqcmtaxNL7YCKKsuYAPJo"],
         }),
       }
     );
