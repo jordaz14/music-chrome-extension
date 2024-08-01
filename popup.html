@@ -10,17 +10,21 @@
   <body>
     <div class="description">
       <p id="title"></p>
-      <p id="mood">Mood:</p>
+      <p id="mood"></p>
     </div>
     <div class="recommendation-container">
       <p id="song">Recommendation:</p>
       <button id="spotify-button">Play Song</button>
     </div>
     <form id="filter-form">
-      <label for="genre-input">Genre (optional):</label>
-      <input type="text" name="genre" placeholder="Filter by Genre" />
-      <label for="artist-input">Artist (optional):</label>
-      <input type="text" name="artist" placeholder="Filter by Artists" />
+      <label for="filter">Filter by:</label>
+      <div class="input-container">
+        <select name="filter" id="filter">
+          <option value="genre">Genre</option>
+          <option value="artist">Artist</option>
+        </select>
+        <input type="text" name="input" placeholder="Enter text here" />
+      </div>
       <button id="openai-button">Find Song</button>
     </form>
   </body>
