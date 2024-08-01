@@ -3,6 +3,7 @@ const moodDesc = document.querySelector("#mood");
 const songRec = document.querySelector("#song");
 const spotifyButton = document.querySelector("#spotify-button");
 const openaiButton = document.querySelector("#openai-button");
+const form = document.querySelector("#filter-form");
 
 /*
 const playButton = document.querySelector("#play-button");
@@ -11,7 +12,7 @@ const pauseButton = document.querySelector("#pause-button");
 
 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
   const activeTab = tabs[0];
-  tabTitle.textContent = `Tab: ${activeTab.title}`;
+  tabTitle.textContent = `${activeTab.title}`;
 });
 
 /*
@@ -26,7 +27,19 @@ pauseButton.addEventListener("click", () => {
 });
 */
 
-openaiButton.addEventListener("click", () => main());
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const formData = new FormData(form);
+  const formDataObj = {};
+  formData.forEach((value, key) => {
+    formDataObj[key] = value;
+  });
+
+  console.log(formDataObj);
+
+  main();
+});
 
 //ChatGPT API
 
@@ -43,31 +56,34 @@ async function loadConfig() {
   }
 }
 
-const schemaJSON = {
-  type: "object",
-  properties: {
-    track: { type: "string", description: "Name of the song" },
-    artist: {
-      type: "string",
-      description: "Name of the artist associated with the track",
-    },
-    album: {
-      type: "string",
-      description: "Name of the album associated with the track",
-    },
-    mood: { type: "string", description: "Mood of the tab title in one word" },
-    rationale: {
-      type: "string",
-      description:
-        "Justification for why ChatGPT recommended this song in one sentence",
-    },
-  },
-  required: ["track", "artist"],
-};
-
 async function main() {
   const API_URL = "https://api.openai.com/v1/chat/completions";
   const API_KEY = await loadConfig();
+
+  let schemaJSON = {
+    type: "object",
+    properties: {
+      track: { type: "string", description: "Name of the song" },
+      artist: {
+        type: "string",
+        description: "Name of the artist associated with the track",
+      },
+      album: {
+        type: "string",
+        description: "Name of the album associated with the track",
+      },
+      mood: {
+        type: "string",
+        description: "Mood of the tab title in one word",
+      },
+      rationale: {
+        type: "string",
+        description:
+          "Justification for why ChatGPT recommended this song in one sentence",
+      },
+    },
+    required: ["track", "artist"],
+  };
 
   async function promptChatGPT(message) {
     try {
@@ -84,7 +100,7 @@ async function main() {
             {
               role: "system",
               content:
-                "You are a helpful assistant designed to output music recommendations in JSON format",
+                "You are a helpful assistant designed to output diverse song recommendations in JSON format",
             },
             { role: "user", content: message },
           ],
@@ -118,7 +134,7 @@ async function main() {
   }
 
   const chatGPTResponse = await promptChatGPT(
-    `Provide a song recommendation which encapsulates the mood of ${tabTitle.textContent}.`
+    `Provide a song recommendation which captures the mood of ${tabTitle.textContent}.`
   );
 
   moodDesc.textContent = `Mood: ${chatGPTResponse.mood}`;
