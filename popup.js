@@ -27,21 +27,66 @@ pauseButton.addEventListener("click", () => {
 });
 */
 
-form.addEventListener("submit", (e) => {
-  e.preventDefault();
+//ChatGPT API
 
-  const formData = new FormData(form);
+main();
+
+async function main() {
+  const schemaJSON = createSchema();
+
+  const chatGPTResponse = await askChatGPT(
+    `Provide a song recommendation which captures the mood of ${tabTitle.textContent}.`,
+    schemaJSON
+  );
+
+  moodDesc.textContent = `Mood: ${chatGPTResponse.mood}`;
+  songRec.textContent = `Recommendation: ${chatGPTResponse.track} by ${chatGPTResponse.artist}`;
+
+  spotifyButton.addEventListener("click", () => {
+    chrome.runtime.sendMessage({
+      action: "authenticateSpotify",
+      payload: chatGPTResponse,
+    });
+  });
+}
+
+form.addEventListener("submit", handleFormSubmit);
+
+async function handleFormSubmit(e) {
+  e.preventDefault();
+  console.log("Form Submitted");
+
   const formDataObj = {};
+  const formData = new FormData(form);
   formData.forEach((value, key) => {
     formDataObj[key] = value;
   });
 
-  console.log(formDataObj);
+  const schemaJSON = createSchema();
 
-  main();
-});
+  formDataObj.genre
+    ? (schemaJSON.properties.track.description = `You must provide a song in this genre ${formDataObj.genre}. No exceptions`)
+    : console.log("No genre entry");
 
-//ChatGPT API
+  formDataObj.artist
+    ? (schemaJSON.properties.track.description = `You must provide a song by ${formDataObj.artist}. No exceptions`)
+    : console.log("No artist entry");
+
+  const chatGPTResponse = await askChatGPT(
+    `Provide a song recommendation which captures the mood of ${tabTitle.textContent}.`,
+    schemaJSON
+  );
+
+  moodDesc.textContent = `Mood: ${chatGPTResponse.mood}`;
+  songRec.textContent = `Recommendation: ${chatGPTResponse.track} by ${chatGPTResponse.artist}`;
+
+  spotifyButton.addEventListener("click", () => {
+    chrome.runtime.sendMessage({
+      action: "authenticateSpotify",
+      payload: chatGPTResponse,
+    });
+  });
+}
 
 async function loadConfig() {
   try {
@@ -56,10 +101,58 @@ async function loadConfig() {
   }
 }
 
-async function main() {
+async function askChatGPT(message, schema) {
   const API_URL = "https://api.openai.com/v1/chat/completions";
   const API_KEY = await loadConfig();
 
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a helpful assistant designed to output diverse song recommendations in JSON format",
+          },
+          { role: "user", content: message },
+        ],
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "musicRecsToJSON",
+              description: "Music Recommendations in JSON Format",
+              parameters: schema,
+            },
+          },
+        ],
+        tool_choice: {
+          type: "function",
+          function: { name: "musicRecsToJSON" },
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Network response was not ok: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const reply = data.choices[0].message.tool_calls[0].function.arguments;
+    const jsonReply = JSON.parse(reply);
+    console.log(jsonReply);
+    return jsonReply;
+  } catch (error) {}
+}
+
+function createSchema() {
   let schemaJSON = {
     type: "object",
     properties: {
@@ -72,6 +165,10 @@ async function main() {
         type: "string",
         description: "Name of the album associated with the track",
       },
+      genre: {
+        type: "string",
+        description: "Music genre associated with the track",
+      },
       mood: {
         type: "string",
         description: "Mood of the tab title in one word",
@@ -82,70 +179,8 @@ async function main() {
           "Justification for why ChatGPT recommended this song in one sentence",
       },
     },
-    required: ["track", "artist"],
+    required: ["track", "artist", "album", "genre", "mood", "rationale"],
   };
 
-  async function promptChatGPT(message) {
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          response_format: { type: "json_object" },
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are a helpful assistant designed to output diverse song recommendations in JSON format",
-            },
-            { role: "user", content: message },
-          ],
-          tools: [
-            {
-              type: "function",
-              function: {
-                name: "musicRecsToJSON",
-                description: "Music Recommendations in JSON Format",
-                parameters: schemaJSON,
-              },
-            },
-          ],
-          tool_choice: {
-            type: "function",
-            function: { name: "musicRecsToJSON" },
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Network response was not ok: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const reply = data.choices[0].message.tool_calls[0].function.arguments;
-      const jsonReply = JSON.parse(reply);
-      console.log(jsonReply);
-      return jsonReply;
-    } catch (error) {}
-  }
-
-  const chatGPTResponse = await promptChatGPT(
-    `Provide a song recommendation which captures the mood of ${tabTitle.textContent}.`
-  );
-
-  moodDesc.textContent = `Mood: ${chatGPTResponse.mood}`;
-  songRec.textContent = `Recommendation: ${chatGPTResponse.track} by ${chatGPTResponse.artist}`;
-
-  spotifyButton.addEventListener("click", () => {
-    chrome.runtime.sendMessage({
-      action: "authenticateSpotify",
-      payload: chatGPTResponse,
-    });
-  });
+  return schemaJSON;
 }
-
-main();
