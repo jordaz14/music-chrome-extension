@@ -11,6 +11,7 @@ const pauseButton = document.querySelector("#pause-button");
 */
 
 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+  console.log("Chrome Tab Query Attempting...");
   const activeTab = tabs[0];
   tabTitle.textContent = `${activeTab.title}`;
 });
@@ -32,14 +33,26 @@ pauseButton.addEventListener("click", () => {
 main();
 
 async function main() {
+  console.log("Main Attempeting...");
   const schemaJSON = createSchema();
 
+  const tabsResult = await new Promise((resolve, reject) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (chrome.runtime.lastError) {
+        return reject(chrome.runtime.lastError);
+      }
+      resolve(tabs[0].title);
+    });
+  });
+
+  console.log(tabsResult);
+
   const chatGPTResponse = await askChatGPT(
-    `Provide a song recommendation which captures the mood of ${tabTitle.textContent}.`,
+    `Recommend a song which relates to ${tabTitle.textContent}. Explain your rationale in pne sentence.`,
     schemaJSON
   );
 
-  moodDesc.textContent = `Mood: ${chatGPTResponse.mood}`;
+  moodDesc.textContent = `${chatGPTResponse.trackChoice}`;
   songRec.textContent = `Recommendation: ${chatGPTResponse.track} by ${chatGPTResponse.artist}`;
 
   spotifyButton.addEventListener("click", () => {
@@ -54,7 +67,6 @@ form.addEventListener("submit", handleFormSubmit);
 
 async function handleFormSubmit(e) {
   e.preventDefault();
-  console.log("Form Submitted");
 
   const formDataObj = {};
   const formData = new FormData(form);
@@ -64,20 +76,20 @@ async function handleFormSubmit(e) {
 
   const schemaJSON = createSchema();
 
-  formDataObj.genre
-    ? (schemaJSON.properties.track.description = `You must provide a song in this genre ${formDataObj.genre}. No exceptions`)
-    : console.log("No genre entry");
+  console.log(formDataObj);
 
-  formDataObj.artist
-    ? (schemaJSON.properties.track.description = `You must provide a song by ${formDataObj.artist}. No exceptions`)
-    : console.log("No artist entry");
+  if (formDataObj.filter == "genre" && formDataObj.input) {
+    schemaJSON.properties.track.description = `You must provide a song in this genre ${formDataObj.input}. No exceptions`;
+  } else if (formDataObj.filter == "artist" && formDataObj.input) {
+    schemaJSON.properties.track.description = `You must provide a song by ${formDataObj.input}. No exceptions`;
+  }
 
   const chatGPTResponse = await askChatGPT(
-    `Provide a song recommendation which captures the mood of ${tabTitle.textContent}.`,
+    `Recommend a song which relates to ${tabTitle.textContent}. Explain your rationale in one sentence.`,
     schemaJSON
   );
 
-  moodDesc.textContent = `Mood: ${chatGPTResponse.mood}`;
+  moodDesc.textContent = `${chatGPTResponse.trackChoice}`;
   songRec.textContent = `Recommendation: ${chatGPTResponse.track} by ${chatGPTResponse.artist}`;
 
   spotifyButton.addEventListener("click", () => {
@@ -119,7 +131,7 @@ async function askChatGPT(message, schema) {
           {
             role: "system",
             content:
-              "You are a helpful assistant designed to output diverse song recommendations in JSON format",
+              "You are a friendly and casual music assistant designed to output diverse song recommendations in JSON format",
           },
           { role: "user", content: message },
         ],
@@ -169,17 +181,13 @@ function createSchema() {
         type: "string",
         description: "Music genre associated with the track",
       },
-      mood: {
-        type: "string",
-        description: "Mood of the tab title in one word",
-      },
-      rationale: {
+      trackChoice: {
         type: "string",
         description:
-          "Justification for why ChatGPT recommended this song in one sentence",
+          "Explanation for choosing this track in relation to the user's input",
       },
     },
-    required: ["track", "artist", "album", "genre", "mood", "rationale"],
+    required: ["track", "artist", "album", "genre", "trackChoice"],
   };
 
   return schemaJSON;
