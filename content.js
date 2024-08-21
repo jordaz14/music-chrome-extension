@@ -1,3 +1,4 @@
+/*
 let audio = new Audio(chrome.runtime.getURL("free-song.mp3"));
 
 const title = document.querySelector("title");
@@ -13,3 +14,4 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     audio.pause();
   }
 });
+*/
