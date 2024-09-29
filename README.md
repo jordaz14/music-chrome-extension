@@ -25,6 +25,4 @@ Tab Tunes is a chrome extension using ChatGPT and Spotify APIs that reads your w
 ## Future Improvements
 
 ## License
-
-## License
 This project is licensed under the GNU General Public License (GPL) - see the [LICENSE](./LICENSE) file for details.
