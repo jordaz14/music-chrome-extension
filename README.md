@@ -59,7 +59,7 @@ function authenticateSpotify(GPTPayload) {
 ```
 https://<chrome-extension-id>.chromiumapp.org/
 ```
-**7. Manage Chrome Extensions and pin Tab Tunes. Ready to Use.**
+**7. Manage Chrome Extensions and pin Tab Tunes. Ready to Use!**
 
 ## How to Use
 
