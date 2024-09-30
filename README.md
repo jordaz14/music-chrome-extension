@@ -14,7 +14,7 @@ Tab Tunes is a chrome extension using ChatGPT and Spotify APIs that reads your w
 - [Installation](#installation)
 - [How to Use](#how-to-use)
 - [Codebase Overview](#codebase-overview)
-- [Key Features](#technical-features)
+- [Technical Features](#technical-features)
 - [Future Improvements](#future-improvements)
 - [License](#license)
 
