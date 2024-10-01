@@ -90,9 +90,7 @@ Chrome extensions are typically made up of 3 files: background.js (global tasks 
 ## Technical Features
 
 - **3rd-Party API Integration**
-
 - **OAuth2 Implict Control Flow**
-
 - **Chrome APIs**
 
 ## Future Improvements
