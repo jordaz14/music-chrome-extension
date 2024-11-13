@@ -164,8 +164,24 @@ async function askChatGPT(message, schema) {
   } catch (error) {}
 }
 
-function createSchema() {
-  let schemaJSON = {
+async function loadConfig() {
+  try {
+    const response = await fetch(chrome.runtime.getURL("config.json"));
+
+    if (!response.ok)
+      throw new Error(`Failed to load config: ${response.statusText}`);
+
+    const config = await response.json();
+
+    return config.API_KEY;
+  } catch (error) {
+    console.error("Error loading configuration:", error);
+    return null;
+  }
+}
+
+function createChatSchema() {
+  return {
     type: "object",
     properties: {
       track: { type: "string", description: "Name of the song" },
