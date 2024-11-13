@@ -24,13 +24,6 @@
       "streaming"
     ]
   },
-  "web_accessible_resources": [
-    {
-      "resources": ["free-song.mp3"],
-      "matches": ["<all_urls>"]
-    }
-  ],
-  "content_scripts": [{ "matches": ["<all_urls>"], "js": ["content.js"] }],
   "permissions": ["activeTab", "identity"],
   "host_permissions": ["https://accounts.spotify.com/"]
 }
